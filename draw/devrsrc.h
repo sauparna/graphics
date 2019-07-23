@@ -13,48 +13,42 @@ namespace DX
 	public:
 
 		DeviceResources(
-			DirectX::XMUINT2 backBufSize = DirectX::XMUINT2{ 400, 300 },
-			UINT backBufCount = 2,
-			DXGI_FORMAT backBufFormat = DXGI_FORMAT_B8G8R8A8_UNORM,
-			DXGI_FORMAT depthBufFormat = DXGI_FORMAT_D24_UNORM_S8_UINT,
-			D3D_FEATURE_LEVEL minFeatureLevel = D3D_FEATURE_LEVEL_9_1
+			DirectX::XMUINT2 back_buffer_size = DirectX::XMUINT2{ 400, 300 },
+			UINT back_buffer_count = 2,
+			DXGI_FORMAT back_buffer_format = DXGI_FORMAT_B8G8R8A8_UNORM,
+			DXGI_FORMAT depth_buffer_format = DXGI_FORMAT_D24_UNORM_S8_UINT,
+			D3D_FEATURE_LEVEL d3d_min_feature_level = D3D_FEATURE_LEVEL_9_1
 		) noexcept;
-
 		~DeviceResources();
-
-		void RegisterDeviceNotify(IDeviceNotify* deviceNotify) { m_deviceNotify = deviceNotify; }
-
+		void RegisterDeviceNotify(IDeviceNotify* device_notify) { device_notify_ = device_notify; }
 		void cdir();
 		void cddr();
 		void cwsdr();
-
-		void SetWindow(HWND hWnd);
-		bool HandleResize(size_t w, size_t h);
-		void HandleLoss();
-		void ModifySwapChain();
-		void CreateSwapChain();
-		void Present();
-
-		ID2D1DeviceContext* GetD2DContext() const { return m_d2dContext.Get(); }
-		ID2D1Factory7* GetD2DFactory() const { return m_d2dFactory.Get(); }
-		DirectX::XMUINT2 GetBackBufSize() const { return m_backBufSize; }
-		DXGI_FORMAT GetBackBufFormat() const { return m_backBufFormat; }
-		UINT GetBackBufCount() const { return m_backBufCount; }
+		void modify_swap_chain();
+		void create_swap_chain();
+		bool handle_resize(size_t w, size_t h);
+		void handle_loss();
+		void present();
+		void set_window(HWND hWnd);
+		ID2D1DeviceContext* d2d_context() const { return d2d_context_.Get(); }
+		ID2D1Factory7* d2d_factory() const { return d2d_factory_.Get(); }
+		DirectX::XMUINT2 back_buffer_size() const { return back_buffer_size_; }
+		DXGI_FORMAT back_buffer_format() const { return back_buffer_format_; }
+		UINT back_buffer_count() const { return back_buffer_count_; }
 
 	private:
-		Microsoft::WRL::ComPtr<ID3D11Device5>			m_d3dDevice;
-		Microsoft::WRL::ComPtr<ID3D11DeviceContext4>	m_d3dContext;
-		Microsoft::WRL::ComPtr<ID2D1Device6>			m_d2dDevice;
-		Microsoft::WRL::ComPtr<ID2D1DeviceContext6>		m_d2dContext;
-		Microsoft::WRL::ComPtr<IDXGISwapChain1>			m_swapChain;
-		Microsoft::WRL::ComPtr<ID2D1Factory7>			m_d2dFactory;
-		Microsoft::WRL::ComPtr<ID2D1Bitmap1>			m_d2dBitmap;
-
-		DXGI_FORMAT			m_backBufFormat, m_depthBufFormat;
-		UINT				m_backBufCount;
-		D3D_FEATURE_LEVEL	m_d3dMinFeatureLevel, m_d3dFeatureLevel;
-		HWND				m_hWnd;
-		DirectX::XMUINT2	m_backBufSize;
-		IDeviceNotify* m_deviceNotify;
+		Microsoft::WRL::ComPtr<ID3D11Device5> d3d_device_;
+		Microsoft::WRL::ComPtr<ID3D11DeviceContext4> d3d_context_;
+		Microsoft::WRL::ComPtr<ID2D1Device6> d2d_device_;
+		Microsoft::WRL::ComPtr<ID2D1DeviceContext6> d2d_context_;
+		Microsoft::WRL::ComPtr<IDXGISwapChain1>	swap_chain_;
+		Microsoft::WRL::ComPtr<ID2D1Factory7> d2d_factory_;
+		Microsoft::WRL::ComPtr<ID2D1Bitmap1> d2d_bitmap_;
+		DXGI_FORMAT	back_buffer_format_, depth_buffer_format_;
+		UINT back_buffer_count_;
+		D3D_FEATURE_LEVEL d3d_min_feature_level_, d3d_feature_level_;
+		HWND hwnd_;
+		DirectX::XMUINT2 back_buffer_size_;
+		IDeviceNotify* device_notify_;
 	};
 }

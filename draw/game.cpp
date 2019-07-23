@@ -20,12 +20,12 @@ Game::~Game() {}
 
 void Game::Initialize(HWND hWnd)
 {
-	devrsrc_->SetWindow(hWnd);
+	devrsrc_->set_window(hWnd);
 	devrsrc_->cdir();
 	cdir();
 	devrsrc_->cddr();
 	cddr();
-	devrsrc_->CreateSwapChain();
+	devrsrc_->create_swap_chain();
 	devrsrc_->cwsdr();
 	cwsdr();
 }
@@ -48,8 +48,8 @@ void Game::cdir()
 
 void Game::cddr()
 {
-	auto context = devrsrc_->GetD2DContext();
-	auto backBufFormat = devrsrc_->GetBackBufFormat();
+	auto context = devrsrc_->d2d_context();
+	auto backBufFormat = devrsrc_->back_buffer_format();
 	auto props = D2D1::BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET, D2D1::PixelFormat(backBufFormat, D2D1_ALPHA_MODE_IGNORE));
 
 	for (size_t i = 0; i < DX::kBitmapCount; i++)
@@ -85,8 +85,8 @@ void Game::render()
 {
 	if (step_timer_.FrameCount() == 0)
 		return;
-	auto context = devrsrc_->GetD2DContext();
-	auto sz = devrsrc_->GetBackBufSize();
+	auto context = devrsrc_->d2d_context();
+	auto sz = devrsrc_->back_buffer_size();
 	context->BeginDraw();
 	context->Clear(ColorF(ColorF::LightCoral, 0.f)); // clear the back buffer
 
@@ -106,12 +106,12 @@ void Game::render()
 	auto hr = context->EndDraw();
 	if (hr != D2DERR_RECREATE_TARGET)
 		ThrowIfFailed(hr);
-	devrsrc_->Present();
+	devrsrc_->present();
 }
 
 void Game::DrawGrid(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 bitmap_sz, Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush)
 {
-	auto context = devrsrc_->GetD2DContext();
+	auto context = devrsrc_->d2d_context();
 	ComPtr<ID2D1Image> prevTarget;
 	context->GetTarget(prevTarget.GetAddressOf());
 	context->SetTarget(bitmap.Get());
@@ -131,7 +131,7 @@ void Game::DrawGrid(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT
 
 void Game::DrawPrimitives(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 size)
 {
-	auto context = devrsrc_->GetD2DContext();
+	auto context = devrsrc_->d2d_context();
 	XMFLOAT2 pos{ static_cast<FLOAT>(size.x / 4), static_cast<FLOAT>(size.y / 4) };
 	XMFLOAT2 sz{ 30.f, 30.f };
 	ComPtr<ID2D1Image> prevTarget;
@@ -148,7 +148,7 @@ void Game::DrawPrimitives(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::
 
 void Game::DrawText(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 size)
 {
-	auto context = devrsrc_->GetD2DContext();
+	auto context = devrsrc_->d2d_context();
 
 	XMFLOAT2 pos{ 0.f, 0.f }; // text-area rectangle's top-left
 	XMFLOAT2 sz{ static_cast<FLOAT>(size.x), static_cast<FLOAT>(size.y) }; // the rectangle's dimension
@@ -181,7 +181,7 @@ And contrary wise, what is, it wouldn't be. And what it wouldn't be, it would. Y
 
 void Game::ClearBitmap(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, ColorF color)
 {
-	auto context = devrsrc_->GetD2DContext();
+	auto context = devrsrc_->d2d_context();
 
 	ComPtr<ID2D1Image> prevTarget;
 	context->GetTarget(prevTarget.GetAddressOf());
@@ -198,7 +198,7 @@ void Game::ClearBitmap(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, ColorF color
 
 void Game::clear()
 {
-	auto context = devrsrc_->GetD2DContext();
+	auto context = devrsrc_->d2d_context();
 	context->Clear(ColorF(ColorF::Blue));
 }
 
@@ -232,13 +232,13 @@ void Game::OnResume() {}
 
 void Game::OnWindowMove()
 {
-	auto sz = devrsrc_->GetBackBufSize();
-	devrsrc_->HandleResize(sz.x, sz.y);
+	auto sz = devrsrc_->back_buffer_size();
+	devrsrc_->handle_resize(sz.x, sz.y);
 }
 
 void Game::OnWindowResize(size_t w, size_t h)
 {
-	devrsrc_->HandleResize(w, h);
+	devrsrc_->handle_resize(w, h);
 	this->cwsdr();
 }
 
@@ -281,7 +281,7 @@ void Game::LoadBitmapFromResource(Microsoft::WRL::ComPtr<ID2D1Bitmap1> target_bi
 	ThrowIfFailed(iwicFactory->CreateFormatConverter(iwicFormatConverter.GetAddressOf()));
 	ThrowIfFailed(iwicFormatConverter->Initialize(iwicDecoderFrame.Get(), GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone, nullptr, 0.f, WICBitmapPaletteTypeCustom));
 
-	auto context = devrsrc_->GetD2DContext();
+	auto context = devrsrc_->d2d_context();
 
 	// TODO: this create-bitmap and preceding parapharnalia should move to cddr
 	ComPtr<ID2D1Bitmap1> bitmap;
@@ -328,7 +328,7 @@ void Game::LoadBitmapFromFile(Microsoft::WRL::ComPtr<ID2D1Bitmap1> target_bitmap
 	ThrowIfFailed(iwicFactory->CreateFormatConverter(iwicFormatConverter.GetAddressOf()));
 	ThrowIfFailed(iwicFormatConverter->Initialize(iwicDecoderFrame.Get(), GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone, nullptr, 0.f, WICBitmapPaletteTypeCustom));
 
-	auto context = devrsrc_->GetD2DContext();
+	auto context = devrsrc_->d2d_context();
 
 	ComPtr<ID2D1Bitmap1> bitmap;
 	ThrowIfFailed(context->CreateBitmapFromWicBitmap(iwicFormatConverter.Get(), bitmap.GetAddressOf()));
@@ -356,8 +356,8 @@ void Game::CopyBitmapFromMemory(Microsoft::WRL::ComPtr<ID2D1Bitmap1> target_bitm
 			mem[y * 100 + x] = 0x00ffff00;
 
 	ComPtr<ID2D1Bitmap1> bitmap;
-	auto context = devrsrc_->GetD2DContext();
-	auto backBufFormat = devrsrc_->GetBackBufFormat();
+	auto context = devrsrc_->d2d_context();
+	auto backBufFormat = devrsrc_->back_buffer_format();
 	auto props = D2D1::BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET, D2D1::PixelFormat(backBufFormat, D2D1_ALPHA_MODE_IGNORE));
 	ThrowIfFailed(context->CreateBitmap(D2D1_SIZE_U{ bitmap_size.x, bitmap_size.y }, nullptr, 0, props, bitmap.ReleaseAndGetAddressOf()));
 
