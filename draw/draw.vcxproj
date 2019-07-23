@@ -143,6 +143,7 @@
     <ClInclude Include="devrsrc.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="draw_pch.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d2dwindow.cpp" />
@@ -158,6 +159,9 @@
     <ProjectReference Include="..\kwindow\kwindow.vcxproj">
       <Project>{06725237-2879-4f71-b5ed-afa7d666a2c2}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -8,32 +8,32 @@ using namespace DX;
 using Microsoft::WRL::ComPtr;
 
 Game::Game(XMUINT2 backBufSize) noexcept(false) :
-	m_devrsrc{ make_unique<DX::DeviceResources>(XMUINT2{backBufSize}) },
-	m_sz{ 100, 100 },
-	m_blurStddev{ 0.f },
-	m_dropshadowOffset{ 10.f, 10.f }
+	devrsrc_{ make_unique<DX::DeviceResources>(XMUINT2{backBufSize}) },
+	tile_size_{ 100, 100 },
+	blur_stddev_{ 0.f },
+	dropshadow_offset_{ 10.f, 10.f }
 {
-	m_devrsrc->RegisterDeviceNotify(this);
+	devrsrc_->RegisterDeviceNotify(this);
 }
 
 Game::~Game() {}
 
 void Game::Initialize(HWND hWnd)
 {
-	m_devrsrc->SetWindow(hWnd);
-	m_devrsrc->cdir();
+	devrsrc_->SetWindow(hWnd);
+	devrsrc_->cdir();
 	cdir();
-	m_devrsrc->cddr();
+	devrsrc_->cddr();
 	cddr();
-	m_devrsrc->CreateSwapChain();
-	m_devrsrc->cwsdr();
+	devrsrc_->CreateSwapChain();
+	devrsrc_->cwsdr();
 	cwsdr();
 }
 
 void Game::cdir()
 {
-	ThrowIfFailed(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory5), reinterpret_cast<IUnknown * *>(m_dwriteFactory.GetAddressOf())));
-	ThrowIfFailed(m_dwriteFactory->CreateTextFormat(
+	ThrowIfFailed(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory5), reinterpret_cast<IUnknown * *>(dwrite_factory_.GetAddressOf())));
+	ThrowIfFailed(dwrite_factory_->CreateTextFormat(
 		L"Segoe UI",
 		nullptr,
 		DWRITE_FONT_WEIGHT_REGULAR,
@@ -41,21 +41,30 @@ void Game::cdir()
 		DWRITE_FONT_STRETCH_NORMAL,
 		8.f,
 		L"en-us",
-		m_textFormat.GetAddressOf()));
-	ThrowIfFailed(m_textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING));
-	ThrowIfFailed(m_textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
+		text_format_.GetAddressOf()));
+	ThrowIfFailed(text_format_->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING));
+	ThrowIfFailed(text_format_->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
 }
 
 void Game::cddr()
 {
-	auto context = m_devrsrc->GetD2DContext();
-	ThrowIfFailed(context->CreateSolidColorBrush(ColorF(ColorF::White), m_whiteBrush.ReleaseAndGetAddressOf()));
-	ThrowIfFailed(context->CreateSolidColorBrush(ColorF(ColorF::Black), m_blackBrush.ReleaseAndGetAddressOf()));
-	ThrowIfFailed(context->CreateSolidColorBrush(ColorF(ColorF::SkyBlue), m_blueBrush.ReleaseAndGetAddressOf()));
-	CreateBitmaps();
-	draw_primitives(m_bitmap1, m_sz);
-	draw_grid(m_bitmap2, m_sz, m_whiteBrush);
-	draw_text(m_bitmap3, m_sz);
+	auto context = devrsrc_->GetD2DContext();
+	auto backBufFormat = devrsrc_->GetBackBufFormat();
+	auto props = D2D1::BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET, D2D1::PixelFormat(backBufFormat, D2D1_ALPHA_MODE_IGNORE));
+
+	for (size_t i = 0; i < DX::kBitmapCount; i++)
+		ThrowIfFailed(context->CreateBitmap(D2D1_SIZE_U{ tile_size_.x, tile_size_.y }, nullptr, 0, props, bitmaps_[i].ReleaseAndGetAddressOf()));
+
+	ThrowIfFailed(context->CreateSolidColorBrush(ColorF(ColorF::White), brushes_[BRUSH_WHITE].ReleaseAndGetAddressOf()));
+	ThrowIfFailed(context->CreateSolidColorBrush(ColorF(ColorF::Black), brushes_[BRUSH_BLACK].ReleaseAndGetAddressOf()));
+	ThrowIfFailed(context->CreateSolidColorBrush(ColorF(ColorF::SkyBlue), brushes_[BRUSH_SKYBLUE].ReleaseAndGetAddressOf()));
+
+	DrawPrimitives(bitmaps_[BITMAP_PRIMITIVES], tile_size_);
+	DrawGrid(bitmaps_[BITMAP_PRIMITIVES_GRID], tile_size_, brushes_[BRUSH_WHITE]);
+	DrawText(bitmaps_[BITMAP_TEXT], tile_size_);
+	LoadBitmapFromFile(bitmaps_[BITMAP_FROM_FILE], L"..\\assets\\tintin.jpg");
+	LoadBitmapFromResource(bitmaps_[BITMAP_FROM_RSRC], L"TintinAndSnowy", L"Image");
+	CopyBitmapFromMemory(bitmaps_[BITMAP_FROM_MEM], tile_size_);
 }
 
 void Game::cwsdr()
@@ -64,57 +73,45 @@ void Game::cwsdr()
 
 void Game::Tick()
 {
-	m_timer.Tick([&]() { Update(m_timer); });
-	Render();
+	step_timer_.Tick([&]() { update(step_timer_); });
+	render();
 }
 
-void Game::Update(DX::StepTimer const& timer)
+void Game::update(DX::StepTimer const& timer)
 {
 }
 
-void Game::CreateBitmaps()
+void Game::render()
 {
-	auto backBufFormat = m_devrsrc->GetBackBufFormat();
-	auto context = m_devrsrc->GetD2DContext();
-	auto props = D2D1::BitmapProperties1(
-		D2D1_BITMAP_OPTIONS_TARGET,
-		D2D1::PixelFormat(backBufFormat, D2D1_ALPHA_MODE_IGNORE)
-	);
-
-	D2D1_SIZE_U sz{ static_cast<UINT32>(m_sz.x), static_cast<UINT32>(m_sz.y) };
-
-	DX::ThrowIfFailed(context->CreateBitmap(sz, nullptr, 0, props, m_bitmap1.ReleaseAndGetAddressOf()));
-	DX::ThrowIfFailed(context->CreateBitmap(sz, nullptr, 0, props, m_bitmap2.ReleaseAndGetAddressOf()));
-	DX::ThrowIfFailed(context->CreateBitmap(sz, nullptr, 0, props, m_bitmap3.ReleaseAndGetAddressOf()));
-}
-
-void Game::Render()
-{
-	if (m_timer.FrameCount() == 0)
+	if (step_timer_.FrameCount() == 0)
 		return;
-	auto context = m_devrsrc->GetD2DContext();
-	auto sz = m_devrsrc->GetBackBufSize();
+	auto context = devrsrc_->GetD2DContext();
+	auto sz = devrsrc_->GetBackBufSize();
 	context->BeginDraw();
 	context->Clear(ColorF(ColorF::LightCoral, 0.f)); // clear the back buffer
-	context->DrawImage(m_bitmap1.Get(), D2D1_POINT_2F{ 20.f, 20.f });
-	context->DrawImage(m_bitmap2.Get(), D2D1_POINT_2F{ 140.f, 20.f });
-	context->DrawImage(m_bitmap3.Get(), D2D1_POINT_2F{ 260.f, 20.f });
+
+	context->DrawImage(bitmaps_[BITMAP_PRIMITIVES].Get(), D2D1_POINT_2F{ 20.f, 20.f });
+	context->DrawImage(bitmaps_[BITMAP_PRIMITIVES_GRID].Get(), D2D1_POINT_2F{ 140.f, 20.f });
+	context->DrawImage(bitmaps_[BITMAP_TEXT].Get(), D2D1_POINT_2F{ 260.f, 20.f });
+	context->DrawImage(bitmaps_[BITMAP_FROM_FILE].Get(), D2D1_POINT_2F{ 380.f, 20.f });
+	context->DrawImage(bitmaps_[BITMAP_FROM_RSRC].Get(), D2D1_POINT_2F{ 500.f, 20.f });
+	context->DrawImage(bitmaps_[BITMAP_FROM_MEM].Get(), D2D1_POINT_2F{ 620.f, 20.f });
 
 	// draw a cross-hair at the center of the back buffer, on top of everything else
 	XMFLOAT2 pos1{ static_cast<float>(sz.x / 2), static_cast<float>(sz.y / 2) };
 	XMFLOAT2 sz1{ 10.f, 10.f };
-	context->DrawLine(D2D1_POINT_2F{ pos1.x, pos1.y - sz1.y }, D2D1_POINT_2F{ pos1.x, pos1.y + sz1.y }, m_whiteBrush.Get());
-	context->DrawLine(D2D1_POINT_2F{ pos1.x - sz1.x, pos1.y }, D2D1_POINT_2F{ pos1.x + sz1.y, pos1.y }, m_whiteBrush.Get());
+	context->DrawLine(D2D1_POINT_2F{ pos1.x, pos1.y - sz1.y }, D2D1_POINT_2F{ pos1.x, pos1.y + sz1.y }, brushes_[BRUSH_WHITE].Get());
+	context->DrawLine(D2D1_POINT_2F{ pos1.x - sz1.x, pos1.y }, D2D1_POINT_2F{ pos1.x + sz1.y, pos1.y }, brushes_[BRUSH_WHITE].Get());
 
 	auto hr = context->EndDraw();
 	if (hr != D2DERR_RECREATE_TARGET)
 		ThrowIfFailed(hr);
-	m_devrsrc->Present();
+	devrsrc_->Present();
 }
 
-void Game::draw_grid(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 bitmap_sz, Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush)
+void Game::DrawGrid(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 bitmap_sz, Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush)
 {
-	auto context = m_devrsrc->GetD2DContext();
+	auto context = devrsrc_->GetD2DContext();
 	ComPtr<ID2D1Image> prevTarget;
 	context->GetTarget(prevTarget.GetAddressOf());
 	context->SetTarget(bitmap.Get());
@@ -132,9 +129,9 @@ void Game::draw_grid(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUIN
 	context->SetTarget(prevTarget.Get());
 }
 
-void Game::draw_primitives(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 size)
+void Game::DrawPrimitives(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 size)
 {
-	auto context = m_devrsrc->GetD2DContext();
+	auto context = devrsrc_->GetD2DContext();
 	XMFLOAT2 pos{ static_cast<FLOAT>(size.x / 4), static_cast<FLOAT>(size.y / 4) };
 	XMFLOAT2 sz{ 30.f, 30.f };
 	ComPtr<ID2D1Image> prevTarget;
@@ -142,16 +139,16 @@ void Game::draw_primitives(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX:
 	context->SetTarget(bitmap.Get());
 	context->BeginDraw();
 	context->Clear(ColorF(ColorF::Teal, 0.0f));
-	context->FillRectangle(RectF(pos.x, pos.y, pos.x + sz.x, pos.y + sz.y), m_whiteBrush.Get());
+	context->FillRectangle(RectF(pos.x, pos.y, pos.x + sz.x, pos.y + sz.y), brushes_[BRUSH_WHITE].Get());
 	auto hr = context->EndDraw();
 	if (hr != D2DERR_RECREATE_TARGET)
 		ThrowIfFailed(hr);
 	context->SetTarget(prevTarget.Get());
 }
 
-void Game::draw_text(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 size)
+void Game::DrawText(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 size)
 {
-	auto context = m_devrsrc->GetD2DContext();
+	auto context = devrsrc_->GetD2DContext();
 
 	XMFLOAT2 pos{ 0.f, 0.f }; // text-area rectangle's top-left
 	XMFLOAT2 sz{ static_cast<FLOAT>(size.x), static_cast<FLOAT>(size.y) }; // the rectangle's dimension
@@ -168,9 +165,9 @@ And contrary wise, what is, it wouldn't be. And what it wouldn't be, it would. Y
 
 	context->Clear(ColorF(ColorF::White, 0.0f));
 
-	context->DrawText(text, wcslen(text), m_textFormat.Get(),
+	context->DrawText(text, wcslen(text), text_format_.Get(),
 		RectF(pos.x, pos.y, pos.x + sz.x, pos.y + sz.y),
-		m_blackBrush.Get());
+		brushes_[BRUSH_BLACK].Get());
 
 	auto hr = context->EndDraw();
 
@@ -182,9 +179,9 @@ And contrary wise, what is, it wouldn't be. And what it wouldn't be, it would. Y
 	context->SetTarget(prevTarget.Get());
 }
 
-void Game::clear_bitmap(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, ColorF color)
+void Game::ClearBitmap(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, ColorF color)
 {
-	auto context = m_devrsrc->GetD2DContext();
+	auto context = devrsrc_->GetD2DContext();
 
 	ComPtr<ID2D1Image> prevTarget;
 	context->GetTarget(prevTarget.GetAddressOf());
@@ -199,26 +196,24 @@ void Game::clear_bitmap(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, ColorF colo
 	context->SetTarget(prevTarget.Get());
 }
 
-void Game::Clear()
+void Game::clear()
 {
-	auto context = m_devrsrc->GetD2DContext();
+	auto context = devrsrc_->GetD2DContext();
 	context->Clear(ColorF(ColorF::Blue));
 }
 
 void Game::OnDeviceLoss()
 {
-	m_whiteBrush.Reset();
-	m_blackBrush.Reset();
-	m_blueBrush.Reset();
+	for (size_t i = 0; i < kBrushCount; i++)
+		brushes_[i].Reset();
 
-	m_builtInEffect.Reset();
-	m_customBlurEffect.Reset();
-	m_customDropShadowEffect.Reset();
-	m_psEffect.Reset();
+	builtin_effect_.Reset();
+	custom_blur_effect_.Reset();
+	custom_dropshadow_effect_.Reset();
+	ps_effect_.Reset();
 
-	m_bitmap1.Reset();
-	m_bitmap2.Reset();
-	m_bitmap3.Reset();
+	for (size_t i = 0; i < kBitmapCount; i++)
+		bitmaps_[i].Reset();
 }
 
 void Game::OnDeviceRestore()
@@ -237,12 +232,147 @@ void Game::OnResume() {}
 
 void Game::OnWindowMove()
 {
-	auto sz = m_devrsrc->GetBackBufSize();
-	m_devrsrc->HandleResize(sz.x, sz.y);
+	auto sz = devrsrc_->GetBackBufSize();
+	devrsrc_->HandleResize(sz.x, sz.y);
 }
 
 void Game::OnWindowResize(size_t w, size_t h)
 {
-	m_devrsrc->HandleResize(w, h);
+	devrsrc_->HandleResize(w, h);
 	this->cwsdr();
+}
+
+void Game::LoadBitmapFromResource(Microsoft::WRL::ComPtr<ID2D1Bitmap1> target_bitmap, wstring resource_name, wstring resource_type)
+{
+	HRSRC imageResourceHandle = nullptr;
+	imageResourceHandle = FindResourceW(HINST_THISCOMPONENT, resource_name.c_str(), resource_type.c_str());
+	HRESULT hr = imageResourceHandle ? S_OK : E_FAIL;
+	ThrowIfFailed(hr);
+
+	HGLOBAL imageResourceDataHandle = nullptr;
+	imageResourceDataHandle = LoadResource(HINST_THISCOMPONENT, imageResourceHandle);
+	hr = imageResourceDataHandle ? S_OK : E_FAIL;
+	ThrowIfFailed(hr);
+
+	void* imageFile = nullptr;
+	imageFile = LockResource(imageResourceDataHandle);
+	hr = imageFile ? S_OK : E_FAIL;
+	ThrowIfFailed(hr);
+
+	DWORD imageFileSize = 0;
+	imageFileSize = SizeofResource(HINST_THISCOMPONENT, imageResourceHandle);
+	hr = imageFileSize ? S_OK : E_FAIL;
+	ThrowIfFailed(hr);
+
+	ComPtr<IWICImagingFactory> iwicFactory;
+	ThrowIfFailed(CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(iwicFactory.GetAddressOf())));
+
+	ComPtr<IWICStream> iwicStream;
+	ThrowIfFailed(iwicFactory->CreateStream(iwicStream.GetAddressOf()));
+	iwicStream->InitializeFromMemory(reinterpret_cast<BYTE*>(imageFile), imageFileSize);
+
+	ComPtr<IWICBitmapDecoder> iwicDecoder;
+	ThrowIfFailed(iwicFactory->CreateDecoderFromStream(iwicStream.Get(), nullptr, WICDecodeMetadataCacheOnLoad, iwicDecoder.GetAddressOf()));
+
+	ComPtr<IWICBitmapFrameDecode> iwicDecoderFrame;
+	ThrowIfFailed(iwicDecoder->GetFrame(0, iwicDecoderFrame.GetAddressOf()));
+
+	ComPtr<IWICFormatConverter> iwicFormatConverter;
+	ThrowIfFailed(iwicFactory->CreateFormatConverter(iwicFormatConverter.GetAddressOf()));
+	ThrowIfFailed(iwicFormatConverter->Initialize(iwicDecoderFrame.Get(), GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone, nullptr, 0.f, WICBitmapPaletteTypeCustom));
+
+	auto context = devrsrc_->GetD2DContext();
+
+	// TODO: this create-bitmap and preceding parapharnalia should move to cddr
+	ComPtr<ID2D1Bitmap1> bitmap;
+	ThrowIfFailed(context->CreateBitmapFromWicBitmap(iwicFormatConverter.Get(), bitmap.GetAddressOf()));
+
+	ComPtr<ID2D1Image> prevTarget;
+	context->GetTarget(prevTarget.GetAddressOf());
+	context->SetTarget(target_bitmap.Get());
+
+	context->BeginDraw();
+	context->DrawBitmap(bitmap.Get());
+	hr = context->EndDraw();
+	if (hr != D2DERR_RECREATE_TARGET)
+		ThrowIfFailed(hr);
+
+	context->SetTarget(prevTarget.Get());
+}
+
+void Game::LoadBitmapFromFile(Microsoft::WRL::ComPtr<ID2D1Bitmap1> target_bitmap, wstring bitmap_file)
+{
+	ComPtr<IWICImagingFactory> iwicFactory;
+	ThrowIfFailed(CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(iwicFactory.GetAddressOf())));
+	ComPtr<IWICBitmapDecoder> iwicDecoder;
+	ThrowIfFailed(iwicFactory->CreateDecoderFromFilename(bitmap_file.c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, iwicDecoder.GetAddressOf()));
+	ComPtr<IWICBitmapFrameDecode> iwicDecoderFrame;
+	ThrowIfFailed(iwicDecoder->GetFrame(0, iwicDecoderFrame.GetAddressOf()));
+
+	// FIXIT: writing to bitmap memory has no effect
+	//ComPtr<IWICBitmap> iwicBitmap;
+	//ThrowIfFailed(iwicFactory->CreateBitmapFromSource(iwicDecoderFrame.Get(), WICBitmapCacheOnDemand, iwicBitmap.GetAddressOf()));
+	//ComPtr<IWICBitmapLock> iwicLock;
+	//WICRect lock_rect = { 0, 0, 10, 10 };
+	//ThrowIfFailed(iwicBitmap->Lock(&lock_rect, WICBitmapLockWrite, iwicLock.GetAddressOf()));
+	//unsigned buf_sz = 0;
+	//BYTE* pv = nullptr;
+	//ThrowIfFailed(iwicLock->GetDataPointer(&buf_sz, &pv));
+	//for (unsigned y = 0; y < 10; y++)
+	//	for (unsigned x = 0; x < 10 * 24; x++)
+	//		* (pv + 10 * y + x) = 0x00;
+	//iwicLock.Reset();
+	//iwicBitmap.Reset();
+
+	ComPtr<IWICFormatConverter> iwicFormatConverter;
+	ThrowIfFailed(iwicFactory->CreateFormatConverter(iwicFormatConverter.GetAddressOf()));
+	ThrowIfFailed(iwicFormatConverter->Initialize(iwicDecoderFrame.Get(), GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone, nullptr, 0.f, WICBitmapPaletteTypeCustom));
+
+	auto context = devrsrc_->GetD2DContext();
+
+	ComPtr<ID2D1Bitmap1> bitmap;
+	ThrowIfFailed(context->CreateBitmapFromWicBitmap(iwicFormatConverter.Get(), bitmap.GetAddressOf()));
+
+	ComPtr<ID2D1Image> prevTarget;
+	context->GetTarget(prevTarget.GetAddressOf());
+	context->SetTarget(target_bitmap.Get());
+
+	context->BeginDraw();
+	context->DrawBitmap(bitmap.Get());
+	auto hr = context->EndDraw();
+	if (hr != D2DERR_RECREATE_TARGET)
+		ThrowIfFailed(hr);
+
+	context->SetTarget(prevTarget.Get());
+}
+
+void Game::CopyBitmapFromMemory(Microsoft::WRL::ComPtr<ID2D1Bitmap1> target_bitmap, XMUINT2 bitmap_size)
+{
+	array<int, 100 * 100 * 4> mem;
+	mem.fill(0);
+
+	for (unsigned y = 20; y < 80; y++)
+		for (unsigned x = 20; x < 80; x++)
+			mem[y * 100 + x] = 0x00ffff00;
+
+	ComPtr<ID2D1Bitmap1> bitmap;
+	auto context = devrsrc_->GetD2DContext();
+	auto backBufFormat = devrsrc_->GetBackBufFormat();
+	auto props = D2D1::BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET, D2D1::PixelFormat(backBufFormat, D2D1_ALPHA_MODE_IGNORE));
+	ThrowIfFailed(context->CreateBitmap(D2D1_SIZE_U{ bitmap_size.x, bitmap_size.y }, nullptr, 0, props, bitmap.ReleaseAndGetAddressOf()));
+
+	D2D1_RECT_U dstRect{ 0, 0, bitmap_size.x, bitmap_size.y };
+	ThrowIfFailed(bitmap->CopyFromMemory(&dstRect, mem.data(), 100 * 4));
+
+	ComPtr<ID2D1Image> prevTarget;
+	context->GetTarget(prevTarget.GetAddressOf());
+	context->SetTarget(target_bitmap.Get());
+
+	context->BeginDraw();
+	context->DrawBitmap(bitmap.Get());
+	auto hr = context->EndDraw();
+	if (hr != D2DERR_RECREATE_TARGET)
+		ThrowIfFailed(hr);
+
+	context->SetTarget(prevTarget.Get());
 }

@@ -11,6 +11,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <wrl/client.h>
+#include "resource.h"
 
 #include <d3d11_4.h>
 #include <d2d1_3.h>
@@ -18,7 +19,7 @@
 #include <d2d1effects.h>
 #include <d2d1effectauthor_1.h>
 #include <d2d1effecthelpers.h>
-
+#include <wincodec.h>
 #include <dwrite_3.h>
 
 #include <DirectXMath.h>
@@ -35,9 +36,34 @@
 #include <string>
 #include <iterator>
 #include <vector>
+#include <array>
+
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+#define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 
 namespace DX
 {
+	const size_t kBitmapCount = 6;
+
+	enum kBitmapNames
+	{
+		BITMAP_PRIMITIVES = 0,
+		BITMAP_PRIMITIVES_GRID,
+		BITMAP_TEXT,
+		BITMAP_FROM_FILE,
+		BITMAP_FROM_RSRC,
+		BITMAP_FROM_MEM
+	};
+
+	const size_t kBrushCount = 3;
+
+	enum kBrushNames
+	{
+		BRUSH_BLACK = 0,
+		BRUSH_WHITE,
+		BRUSH_SKYBLUE
+	};
+
 	// Helper class for COM exceptions.
 	class com_exception : public std::exception
 	{

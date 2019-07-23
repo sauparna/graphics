@@ -20,27 +20,29 @@ public:
 	void Tick();
 
 private:
-	void Update(DX::StepTimer const& timer);
-	void Render();
-	void Clear();
+	void update(DX::StepTimer const& timer);
+	void render();
+	void clear();
 	void cdir();
 	void cddr();
 	void cwsdr();
-	void CreateBitmaps();
-	void draw_primitives(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 sz);
-	void draw_text(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 sz);
-	void draw_grid(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 sz, Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush);
-	void clear_bitmap(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, D2D1::ColorF color);
+	void DrawPrimitives(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 sz);
+	void DrawText(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 sz);
+	void DrawGrid(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, DirectX::XMUINT2 sz, Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush);
+	void ClearBitmap(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, D2D1::ColorF color);
+	void LoadBitmapFromFile(Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmap, std::wstring bitmap_file);
+	void LoadBitmapFromResource(Microsoft::WRL::ComPtr<ID2D1Bitmap1> target_bitmap, std::wstring resource_name, std::wstring resource_type);
+	void CopyBitmapFromMemory(Microsoft::WRL::ComPtr<ID2D1Bitmap1> target_bitmap, DirectX::XMUINT2 sz);
 
-	std::unique_ptr<DX::DeviceResources> m_devrsrc;
-	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> m_whiteBrush, m_blackBrush, m_blueBrush;
-	Microsoft::WRL::ComPtr<ID2D1Bitmap1> m_bitmap1, m_bitmap2, m_bitmap3;
-	Microsoft::WRL::ComPtr<IDWriteTextFormat> m_textFormat;
-	Microsoft::WRL::ComPtr<IDWriteFactory5> m_dwriteFactory;
-	Microsoft::WRL::ComPtr<ID2D1Effect> m_builtInEffect, m_customBlurEffect, m_customDropShadowEffect, m_psEffect;
+	std::unique_ptr<DX::DeviceResources> devrsrc_;
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brushes_[DX::kBrushCount];
+	Microsoft::WRL::ComPtr<ID2D1Bitmap1> bitmaps_[DX::kBitmapCount];
+	Microsoft::WRL::ComPtr<IDWriteTextFormat> text_format_;
+	Microsoft::WRL::ComPtr<IDWriteFactory5> dwrite_factory_;
+	Microsoft::WRL::ComPtr<ID2D1Effect> builtin_effect_, custom_blur_effect_, custom_dropshadow_effect_, ps_effect_;
 
-	DirectX::XMUINT2 m_sz;
-	DX::StepTimer m_timer;
-	FLOAT m_blurStddev;
-	D2D_VECTOR_2F m_dropshadowOffset;
+	DirectX::XMUINT2 tile_size_;
+	DX::StepTimer step_timer_;
+	FLOAT blur_stddev_;
+	D2D_VECTOR_2F dropshadow_offset_;
 };
