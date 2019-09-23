@@ -214,12 +214,16 @@ LRESULT KD3DWindow::KWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			{
 				SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
 				SetWindowLongPtr(hWnd, GWL_EXSTYLE, 0);
-				int width = 800;
-				int height = 600;
+				int w = 800;
+				int h = 600;
 				if (game)
-					game->GetDefaultSize(width, height);
+				{
+					XMUINT2 back_buffer_size = game->device_back_buffer_size();
+					w = back_buffer_size.x;
+					h = back_buffer_size.y;
+				}
 				ShowWindow(hWnd, SW_SHOWNORMAL);
-				SetWindowPos(hWnd, HWND_TOP, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
+				SetWindowPos(hWnd, HWND_TOP, 0, 0, w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
 			}
 			else
 			{

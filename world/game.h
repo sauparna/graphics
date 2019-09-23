@@ -21,42 +21,37 @@ public:
 #ifdef DXTK_AUDIO
 	void NewAudioDevice(void);
 #endif
-	void GetDefaultSize(int& w, int& h) const;
+	DirectX::XMUINT2 device_back_buffer_size() const;
 
 private:
-	void Update(DX::StepTimer const& timer);
-	void Render();
-	void Clear();
-
 	void cdir();
 	void cddr();
 	void cwsdr();
-
-	void XM_CALLCONV DrawGrid(DirectX::FXMVECTOR xAxis, DirectX::FXMVECTOR yAxis, DirectX::FXMVECTOR origin, size_t xdivs, size_t ydivs, DirectX::GXMVECTOR color);
-
-	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>> m_batch;
-	std::unique_ptr<DX::DeviceResources> m_devrsrc;
-	std::unique_ptr<DirectX::GamePad> m_gamepad;
-	std::unique_ptr<DirectX::Keyboard> m_keyboard;
-	std::unique_ptr<DirectX::Mouse>	m_mouse;
-	std::unique_ptr<DirectX::CommonStates> m_states;
-	std::unique_ptr<DirectX::BasicEffect> m_effect;
-	std::unique_ptr<DirectX::EffectFactory>	m_fxFactory;
-	std::unique_ptr<DirectX::GeometricPrimitive> m_shape;
-	DX::StepTimer m_timer;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
-	DirectX::SimpleMath::Matrix	m_world;
-	DirectX::SimpleMath::Matrix	m_view;
-	DirectX::SimpleMath::Matrix	m_proj;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterState;
+	void update(DX::StepTimer const& timer);
+	void render();
+	void clear();
+	std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>> primitive_batch_;
+	std::unique_ptr<DX::DeviceResources> devrsrc_;
+	std::unique_ptr<DirectX::GamePad> gamepad_;
+	std::unique_ptr<DirectX::Keyboard> keyboard_;
+	std::unique_ptr<DirectX::Mouse>	mouse_;
+	std::unique_ptr<DirectX::CommonStates> states_;
+	std::unique_ptr<DirectX::BasicEffect> effect_;
+	std::unique_ptr<DirectX::IEffectFactory> fxfactory_;
+	std::unique_ptr<DirectX::GeometricPrimitive> geometric_primitive_;
+	std::unique_ptr<DirectX::Model> model_;
+	DX::StepTimer step_timer_;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> input_layout_;
+	DirectX::SimpleMath::Matrix	world_matrix_, view_matrix_, projection_matrix_;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> rasterizer_state_;
 #ifdef DXTK_AUDIO
-	std::unique_ptr<DirectX::AudioEngine>				m_audioEngine;
-	std::unique_ptr<DirectX::WaveBank>					m_wavebank;
-	std::unique_ptr<DirectX::SoundEffect>				m_soundeEffect;
-	std::unique_ptr<DirectX::SoundEffectInstance>		m_soundFxInst1;
-	std::unique_ptr<DirectX::SoundEffectInstance>		m_soundFxInst2;
-	uint32_t											m_audioEvent;
-	float												m_audioTimerAcc;
-	bool												m_retryDefault;
+	std::unique_ptr<DirectX::AudioEngine>				audio_engine_;
+	std::unique_ptr<DirectX::WaveBank>					wave_bank_;
+	std::unique_ptr<DirectX::SoundEffect>				sound_effect_;
+	std::unique_ptr<DirectX::SoundEffectInstance>		sound_effect_instance1_;
+	std::unique_ptr<DirectX::SoundEffectInstance>		sound_effect_instance2_;
+	uint32_t											audio_event_;
+	float												audio_timer_acc_;
+	bool												retry_default_;
 #endif
 };

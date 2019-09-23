@@ -1,6 +1,2 @@
 #include "graphics_pch.h"
-
-namespace X
-{
-
-};
+#include "transform.h"

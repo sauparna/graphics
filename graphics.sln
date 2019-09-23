@@ -27,6 +27,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "world", "world\world.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXTK_Desktop_2019_Win10", "DirectXTK-apr2019\DirectXTK_Desktop_2019_Win10.vcxproj", "{E0B52AE7-E160-4D32-BF3F-910B785E5A8E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dxlib", "dxlib\dxlib.vcxproj", "{328F121E-614A-4263-A3CB-072627623CB5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -83,6 +85,14 @@ Global
 		{E0B52AE7-E160-4D32-BF3F-910B785E5A8E}.Release|x64.Build.0 = Release|x64
 		{E0B52AE7-E160-4D32-BF3F-910B785E5A8E}.Release|x86.ActiveCfg = Release|Win32
 		{E0B52AE7-E160-4D32-BF3F-910B785E5A8E}.Release|x86.Build.0 = Release|Win32
+		{328F121E-614A-4263-A3CB-072627623CB5}.Debug|x64.ActiveCfg = Debug|x64
+		{328F121E-614A-4263-A3CB-072627623CB5}.Debug|x64.Build.0 = Debug|x64
+		{328F121E-614A-4263-A3CB-072627623CB5}.Debug|x86.ActiveCfg = Debug|Win32
+		{328F121E-614A-4263-A3CB-072627623CB5}.Debug|x86.Build.0 = Debug|Win32
+		{328F121E-614A-4263-A3CB-072627623CB5}.Release|x64.ActiveCfg = Release|x64
+		{328F121E-614A-4263-A3CB-072627623CB5}.Release|x64.Build.0 = Release|x64
+		{328F121E-614A-4263-A3CB-072627623CB5}.Release|x86.ActiveCfg = Release|Win32
+		{328F121E-614A-4263-A3CB-072627623CB5}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
