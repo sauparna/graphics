@@ -11,7 +11,6 @@ namespace DX
 	class DeviceResources
 	{
 	public:
-
 		DeviceResources(
 			DirectX::XMUINT2 back_buffer_size = DirectX::XMUINT2{ 400, 300 },
 			UINT back_buffer_count = 2,

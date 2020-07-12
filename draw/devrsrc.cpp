@@ -43,11 +43,9 @@ void DeviceResources::set_window(HWND hwnd)
 void DeviceResources::cdir()
 {
 	D2D1_FACTORY_OPTIONS opts = {};
-
 #if defined(_DEBUG)
 	opts.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 #endif
-
 	ThrowIfFailed(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, opts, d2d_factory_.GetAddressOf()));
 }
 
@@ -131,8 +129,10 @@ void DeviceResources::cwsdr()
 	ComPtr<IDXGISurface> dxgi_surface;
 	ThrowIfFailed(swap_chain_->GetBuffer(0, IID_PPV_ARGS(dxgi_surface.GetAddressOf())));
 
-	auto d2d_bitmap_properties = BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-		PixelFormat(back_buffer_format_, D2D1_ALPHA_MODE_IGNORE));
+	auto d2d_bitmap_properties = BitmapProperties1(
+		D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+		PixelFormat(back_buffer_format_, D2D1_ALPHA_MODE_IGNORE)
+	);
 
 	ThrowIfFailed(d2d_context_->CreateBitmapFromDxgiSurface(dxgi_surface.Get(), d2d_bitmap_properties, d2d_bitmap_.GetAddressOf()));
 

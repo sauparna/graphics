@@ -24,7 +24,22 @@
     <ClInclude Include="transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="graphics_pch.h">
+    <ClInclude Include="graphics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="error.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="progressreporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stats.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stringprint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parallel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -34,16 +49,22 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="geometry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="graphics_pch.cpp">
+    <ClCompile Include="error.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="progressreporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stats.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parallel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

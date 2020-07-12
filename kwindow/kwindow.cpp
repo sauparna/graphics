@@ -91,24 +91,23 @@ bool KWindow::KCreateWindow(DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindow
 void KWindow::KSetClass(WNDCLASSEX& wc)
 {
 	ZeroMemory(&wc, sizeof(wc));
-	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = WndProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = nullptr;
-	wc.hIcon = nullptr;
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wc.cbSize		 = sizeof(WNDCLASSEX);
+	wc.style		 = CS_HREDRAW | CS_VREDRAW;
+	wc.lpfnWndProc	 = WndProc;
+	wc.cbClsExtra	 = 0;
+	wc.cbWndExtra	 = 0;
+	wc.hInstance	 = nullptr;
+	wc.hIcon		 = nullptr;
+	wc.hCursor		 = LoadCursor(nullptr, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	wc.lpszMenuName = nullptr;
+	wc.lpszMenuName	 = nullptr;
 	wc.lpszClassName = nullptr;
-	wc.hIconSm = nullptr;
+	wc.hIconSm		 = nullptr;
 }
 
 WPARAM KWindow::KMessageLoop()
 {
 	MSG msg{};
-
 	while (WM_QUIT != msg.message)
 	{
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -117,6 +116,5 @@ WPARAM KWindow::KMessageLoop()
 			DispatchMessage(&msg);
 		}
 	}
-
 	return msg.wParam;
 }

@@ -41,7 +41,7 @@ LRESULT KD2DWindow::KWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		else
 		{
 			hDC = BeginPaint(hWnd, &ps);
-			EndPaint(hWnd, &ps);
+			EndPaint(hWnd, &ps);                      
 		}
 		break;
 	case WM_MOVE:
