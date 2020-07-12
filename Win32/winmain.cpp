@@ -23,7 +23,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow)
 {
-	// Register the window class ------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// Register the window class
+	//----------------------------------------------------------------------------------------------------
 
 	const wchar_t CLASS_NAME[] = L"Reference Win32 Class";
 	WNDCLASS wc = {};
@@ -32,11 +34,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
 	wc.lpszClassName = CLASS_NAME;
 	RegisterClass(&wc);
 
+	//----------------------------------------------------------------------------------------------------
 	// Initialize new state information object.
+	//----------------------------------------------------------------------------------------------------
+	
 	StateInfo* pState = new (std::nothrow) StateInfo;
 	if (pState == nullptr) return 0;
 
-	// Create the window --------------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// Create the window
+	//----------------------------------------------------------------------------------------------------
 
 	HWND hWnd = CreateWindowEx(
 		0,						// Optional window styles
@@ -53,8 +60,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
 	if (hWnd == NULL) return 0;
 	ShowWindow(hWnd, nCmdShow);
 
-	// Run the message loop -----------------------------------------------------
+	//----------------------------------------------------------------------------------------------------
+	// Run the message loop
 	// DispatchMessage indirectly causes Windows to invoke WndProc, once for each message.
+	//----------------------------------------------------------------------------------------------------
 
 	MSG msg = {};
 	while (GetMessage(&msg, NULL, 0, 0))
