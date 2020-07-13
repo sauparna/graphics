@@ -138,7 +138,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="win.cpp" />
+    <ClCompile Include="winnew.cpp" />
+    <ClCompile Include="winoo.cpp" />
     <ClCompile Include="winmain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="win.h" />
+    <ClInclude Include="winnew.h" />
+    <ClInclude Include="winoo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,24 +2,39 @@
 // This is a vanilla Win32 program that demonstrates the basics of creating a window for your program.
 // Most of it was picked from Microsoft Docs, here:
 // https://docs.microsoft.com/en-us/windows/win32/learnwin32/learn-to-program-for-windows
+// The C++ version was written from the "Managing Application State" section of the documentation.
 //----------------------------------------------------------------------------------------------------
 
 #include <windows.h>
-#include <string>
-#include <exception>
+#include "win.h"
+#include "winnew.h"
 
 const int WND_X = 400;
 const int WND_Y = 300;
 const int WND_W = 300;
 const int WND_H = 200;
 
-struct StateInfo
-{
-	std::wstring s = L"Hello world!";
-	RECT box{10, 10, 100, 100};
-};
+// Use the macros to switch on/off two different entry points: one calls plain C code, the other call the code that
+// uses C++ classes to wrap Win32 API in order to keep track of program state.
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#define WINOO // object oriented; wrapped a in C++ class
+//#define WIN // vanilla; C funtions
+
+#ifdef WINOO
+
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow)
+{
+	NewWindow winnew;
+	if (!winnew.create(L"New Window", WS_OVERLAPPEDWINDOW, WND_X, WND_Y, WND_W, WND_H))
+		return 0;
+	ShowWindow(winnew.hwnd(), nCmdShow);
+	winnew.msg_loop();
+	return 0;
+}
+
+#endif // WINOO
+
+#ifdef WIN
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow)
 {
@@ -75,37 +90,4 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
 	return 0;
 }
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	StateInfo* pState = nullptr;
-	if (uMsg == WM_CREATE)
-	{
-		// Get the state object and put it in the instance data for the window.
-		pState = reinterpret_cast<StateInfo*>(reinterpret_cast<CREATESTRUCT*>(lParam)->lpCreateParams);
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)pState);
-	}
-	else
-		pState = reinterpret_cast<StateInfo*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-	switch (uMsg)
-	{
-	case WM_CLOSE:
-	{
-		if (MessageBox(hWnd, L"Really quit?", L"Win32 Reference", MB_OKCANCEL) == IDOK)
-			DestroyWindow(hWnd);
-	}
-		return 0;
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		return 0;
-	case WM_PAINT:
-	{
-		PAINTSTRUCT ps;
-		HDC hDC = BeginPaint(hWnd, &ps);
-		FillRect(hDC, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
-		DrawText(hDC, (LPCWSTR)pState->s.c_str(), pState->s.length(), (LPRECT)&(pState->box), DT_CENTER);
-		EndPaint(hWnd, &ps);
-	}
-		return 0;
-	}
-	return DefWindowProc(hWnd, uMsg, wParam, lParam);
-}
+#endif // WIN

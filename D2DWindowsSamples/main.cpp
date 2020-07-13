@@ -27,17 +27,14 @@ inline void SafeRelease(Interface** ppInterfaceToRelease)
 	}
 }
 
-std::string GetLastErrorAsString()
+static inline void PrintLastError()
 {
-	DWORD errorMessageID = ::GetLastError();
-	if (errorMessageID == 0)
-		return std::string();
-	LPSTR messageBuffer = nullptr;
-	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		nullptr, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, nullptr);
-	std::string message(messageBuffer, size);
-	LocalFree(messageBuffer);
-	return message;
+	wchar_t buf[512];
+	size_t size = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		buf, (sizeof(buf) / sizeof(wchar_t)), NULL);
+	std::wstring msg(buf, size);
+	OutputDebugString((LPCWSTR)msg.c_str());
 }
 
 class D2DDrawingSurface
@@ -134,7 +131,7 @@ HRESULT D2DDrawingSurface::Initialize(HINSTANCE hInstance)
 	hWnd_ = CreateWindowEx(
 		0,						// Optional window styles.
 		CLASS_NAME,				// Window class name.
-		L"Direct2D Surface",	// Window test.
+		L"Direct2D Surface",	// Window text.
 		WS_OVERLAPPEDWINDOW,	// Window style.
 		CW_USEDEFAULT, CW_USEDEFAULT, w, h, // Size and position.
 		nullptr,				// Parent window.
@@ -222,7 +219,7 @@ LRESULT CALLBACK D2DDrawingSurface::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam,
 	D2DDrawingSurface* d2d_surface = nullptr;
 	if (uMsg == WM_CREATE)
 	{
-		// Get the this pointer passed by the call to CreateWindowEx and put it in the instance data for the window.
+		// Pass the 'this' pointer by calling CreateWindowEx and put it in the instance data for the window.
 		d2d_surface = reinterpret_cast<D2DDrawingSurface*>((reinterpret_cast<CREATESTRUCT*>(lParam))->lpCreateParams);
 		::SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(d2d_surface));
 	}
