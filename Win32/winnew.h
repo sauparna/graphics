@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Windows.h>
 #include "winoo.h"
 
 class NewWindow : public BaseWindow<NewWindow>

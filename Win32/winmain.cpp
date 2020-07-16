@@ -2,7 +2,7 @@
 // This is a vanilla Win32 program that demonstrates the basics of creating a window for your program.
 // Most of it was picked from Microsoft Docs, here:
 // https://docs.microsoft.com/en-us/windows/win32/learnwin32/learn-to-program-for-windows
-// The C++ version was written from the "Managing Application State" section of the documentation.
+// The C++ version was written from the "Managing Application State" section of the same document.
 //----------------------------------------------------------------------------------------------------
 
 #include <windows.h>
@@ -18,7 +18,7 @@ const int WND_H = 200;
 // uses C++ classes to wrap Win32 API in order to keep track of program state.
 
 #define WINOO // object oriented; wrapped a in C++ class
-//#define WIN // vanilla; C funtions
+//#define WIN // vanilla; C functions
 
 #ifdef WINOO
 

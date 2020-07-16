@@ -4,5 +4,5 @@
 void KTestWindow::OnKeyDown(WPARAM wParam, LPARAM lParam)
 {
 	if (wParam == VK_ESCAPE)
-		PostMessageA(hWnd, WM_CLOSE, 0, 0);
+		PostMessage(hwnd_, WM_DESTROY, 0, 0);
 }
